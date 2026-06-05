@@ -45,7 +45,7 @@ class ThimarViewModel(application: Application) : AndroidViewModel(application) 
 
     // تدفق كل المستخدمين بنظام جمعية الثمار لإدارتهم من قبل المالك المهندس طارق
     val allUsers: StateFlow<List<User>> = dao.getAllUsers()
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     // --- حالة التحديث الجاري والسحب ومزامنة البيانات ---
     private val _isRefreshing = MutableStateFlow(false)
@@ -66,7 +66,7 @@ class ThimarViewModel(application: Application) : AndroidViewModel(application) 
     // --- النصوص النشطة القابلة للتعديل والتحرير بمشرف المالك (المهندس طارق) ---
     val editableTexts: StateFlow<Map<String, String>> = dao.getAllEditableTextsFlow()
         .map { list -> list.associate { it.textKey to it.textValue } }
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
     init {
         viewModelScope.launch {
@@ -138,10 +138,10 @@ class ThimarViewModel(application: Application) : AndroidViewModel(application) 
 
     // --- إدارة الأقسام (صناديق الشبكة) ---
     val sections: StateFlow<List<Section>> = dao.getAllSectionsFlow()
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     val visibleSections: StateFlow<List<Section>> = dao.getVisibleSectionsFlow()
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     fun addOrUpdateSection(id: String?, name: String, bgImageUrl: String, isVisible: Boolean, orderIndex: Int) {
         viewModelScope.launch {
@@ -276,7 +276,7 @@ class ThimarViewModel(application: Application) : AndroidViewModel(application) 
 
     // --- الاستشارات الزراعية ---
     val consultations: StateFlow<List<Consultation>> = dao.getAllConsultationsFlow()
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     fun getMyConsultations(userId: String): Flow<List<Consultation>> = dao.getMyConsultationsFlow(userId)
 
@@ -357,7 +357,7 @@ class ThimarViewModel(application: Application) : AndroidViewModel(application) 
 
     // --- ديوانية مزارعي الثمار (الدردشة الجماعية التفاعلية) ---
     val chatMessages: StateFlow<List<ChatMessage>> = dao.getChatMessagesFlow()
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     fun sendChatMessage(message: String, imageUrl: String? = null) {
         viewModelScope.launch {
@@ -373,7 +373,7 @@ class ThimarViewModel(application: Application) : AndroidViewModel(application) 
 
     // --- الإعلانات المنبثقة الطارئة ---
     val activeAnnouncements: StateFlow<List<PopupAnnouncement>> = dao.getActiveAnnouncementsFlow()
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     fun addAnnouncement(title: String, message: String, imageUrl: String?) {
         viewModelScope.launch {
