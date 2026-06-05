@@ -1,4 +1,4 @@
-name: Build Android APK (Native)
+name: Build Android APK (Robust)
 
 on:
   push:
@@ -9,28 +9,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. سحب الكود من المستودع
+    # 1. سحب الكود من مشروعك
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # 2. إعداد الجافا (مهمة جداً للأندرويد)
-    - name: Set up Java
+    # 2. إعداد إصدار متوافق من الجافا (Java 17)
+    - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
         java-version: '17'
 
-    # 3. إعطاء صلاحية تشغيل ملف البناء لـ Gradle
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+    # 3. إعداد أداة البناء Gradle سحابياً بشكل كامل (لحل مشكلة الملفات الناقصة)
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
 
-    # 4. الأمر الفعلي لبناء ملف الـ APK
-    - name: Build with Gradle
-      run: ./gradlew assembleRelease
+    # 4. تشغيل أمر بناء الـ APK مباشرة
+    - name: Build APK with Gradle
+      run: gradle assembleRelease --no-daemon
 
-    # 5. رفع ملف الـ APK الناتج لتتمكن من تحميله
+    # 5. البحث عن ملف الـ APK ورفعه لتنزيله
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: release-apk
-        path: app/build/outputs/apk/release/app-release-unsigned.apk
+        path: "**/build/outputs/apk/release/*.apk"
