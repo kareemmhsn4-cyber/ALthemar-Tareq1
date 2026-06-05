@@ -1,4 +1,4 @@
-name: Build Android APK (Robust)
+name: Build Android APK (Debug Mode)
 
 on:
   push:
@@ -13,24 +13,24 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # 2. إعداد إصدار متوافق من الجافا (Java 17)
+    # 2. إعداد إصدار متوافق من الجافا
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
         java-version: '17'
 
-    # 3. إعداد أداة البناء Gradle سحابياً بشكل كامل (لحل مشكلة الملفات الناقصة)
+    # 3. إعداد أداة البناء Gradle سحابياً
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
 
-    # 4. تشغيل أمر بناء الـ APK مباشرة
+    # 4. تشغيل أمر بناء نسخة الـ Debug (لتخطي مشكلة ملف التوقيع المفقود)
     - name: Build APK with Gradle
-      run: gradle assembleRelease --no-daemon
+      run: gradle assembleDebug --no-daemon
 
-    # 5. البحث عن ملف الـ APK ورفعه لتنزيله
+    # 5. البحث عن ملف الـ APK الناتج ورفعه لتنزيله
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: release-apk
-        path: "**/build/outputs/apk/release/*.apk"
+        name: debug-apk
+        path: "**/build/outputs/apk/debug/*.apk"
