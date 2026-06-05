@@ -40,6 +40,12 @@ interface ThimarDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSection(section: Section)
 
+    @Update
+    suspend fun updateSection(section: Section)
+
+    @Query("UPDATE sections SET is_visible = :isVisible WHERE id = :id")
+    suspend fun updateSectionVisibility(id: String, isVisible: Boolean)
+
     @Query("DELETE FROM sections WHERE id = :id")
     suspend fun deleteSection(id: String)
 
@@ -52,6 +58,9 @@ interface ThimarDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertContent(content: Content)
+
+    @Update
+    suspend fun updateContent(content: Content)
 
     @Query("DELETE FROM contents WHERE id = :id")
     suspend fun deleteContent(id: String)
