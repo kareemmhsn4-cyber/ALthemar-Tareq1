@@ -44,6 +44,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import coil.compose.rememberAsyncImagePainter
 import com.example.data.*
 import com.example.ui.theme.ThemeProvider
@@ -509,16 +513,29 @@ fun HomeScreen(
     viewModel: ThimarViewModel,
     onSelectSection: (Section) -> Unit
 ) {
-    val currentUser by viewModel.currentUser.collectAsState()
-    val sections by viewModel.sections.collectAsState()
-    val visibleSections by viewModel.visibleSections.collectAsState()
-    val activeTexts by viewModel.editableTexts.collectAsState()
+    val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
+    val sections by viewModel.sections.collectAsStateWithLifecycle()
+    val visibleSections by viewModel.visibleSections.collectAsStateWithLifecycle()
+    val activeTexts by viewModel.editableTexts.collectAsStateWithLifecycle()
 
     // الاستعانة الصريحة بـ visibleSections للمزارع العادي بدلاً من sections المفتوحة
     val currentList = if (currentUser?.role == "OWNER") sections else visibleSections
 
+    // مراقبة دورة حياة الشاشة: إعادة التحقق من البيانات عند العودة (onResume)
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                // SharingStarted.WhileSubscribed يُعيد الاتصال بـ Room Flow تلقائياً
+                // collectAsStateWithLifecycle يضمن استقبال آخر قيمة فور استئناف الشاشة
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
     // إعداد حركة سحب الشاشة للتحديث وتحديث وربط البيانات (Pull To Refresh)
-    val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     var dragOffset by remember { mutableStateOf(0f) }
     val nestedScrollConnection = remember {
         object : androidx.compose.ui.input.nestedscroll.NestedScrollConnection {
@@ -873,7 +890,7 @@ fun SectionContentsScreen(
     onSelectContent: (Content) -> Unit
 ) {
     val currentUser by viewModel.currentUser.collectAsState()
-    val contents by viewModel.getContents(section.id).collectAsState(initial = emptyList())
+    val contents by viewModel.getContents(section.id).collectAsStateWithLifecycle(initialValue = emptyList())
     var searchQuery by remember { mutableStateOf("") }
 
     // مؤشر تحميل متناسق للأقسام والمحتويات
@@ -1137,8 +1154,8 @@ fun ContentDetailsScreen(
     content: Content,
     onBack: () -> Unit
 ) {
-    val gallery by viewModel.getContentImages(content.id).collectAsState(initial = emptyList())
-    val tags by viewModel.getContentTags(content.id).collectAsState(initial = emptyList())
+    val gallery by viewModel.getContentImages(content.id).collectAsStateWithLifecycle(initialValue = emptyList())
+    val tags by viewModel.getContentTags(content.id).collectAsStateWithLifecycle(initialValue = emptyList())
 
     Column(
         modifier = Modifier
